@@ -1,0 +1,32 @@
+plugins {
+    id 'groovy' // groovy support
+    id 'java' // java support
+    id 'com.diffplug.spotless' version '6.6.1' //code format
+    id "com.github.johnrengelman.shadow" version "7.1.2" // fat jar
+}
+
+ext {
+    javaVersion = JavaVersion.VERSION_17
+    scriptsLocation = 'gradle' + File.separator + 'scripts' + File.separator // location of script plugins"
+}
+
+apply from: scriptsLocation + 'spotless.gradle'
+
+repositories {
+    mavenCentral()
+    maven { url "https://www.jitpack.io" } // allows github repos as dependencies
+    maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }  // sonatype snapshot repo
+}
+
+dependencies{
+    implementation 'com.github.ie3-institute:simonaAPI:0.1-SNAPSHOT'
+
+    /* logging */
+    implementation 'ch.qos.logback:logback-classic:1.2.11'
+}
+
+group = 'edu.ie3'
+version = '0.1-SNAPSHOT'
+description = 'SimonaOpfInterface'
+sourceCompatibility = javaVersion
+targetCompatibility = javaVersion
