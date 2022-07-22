@@ -55,7 +55,12 @@ public class ExtDcopfSim extends ExtSimulation implements ExtOpfSimulation {
         log.info("External DCOPF Simulation: Tick {} has been triggered.", tick);
 
         // start Matlab and call Matpower function
-        double[][]results = callMatpower(this.gridname);
+        double[][]results = new double[0][];
+        try {
+            results = callMatpower(this.gridname);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
         // transform Double into Comparable Quantity PValue
         ArrayList<PValue> activePower = new ArrayList<PValue>();
@@ -83,12 +88,21 @@ public class ExtDcopfSim extends ExtSimulation implements ExtOpfSimulation {
         return newTicks;
     }
 
-    public double[][] callMatpower(String mpc) throws ExecutionException, InterruptedException {
+    public double[][] callMatpower(String mpc) throws InterruptedException {
         //start Matlab
-        eng = MatlabEngine.startMatlab();
+        try {
+            eng = MatlabEngine.startMatlab();
+        } catch (EngineException e) {
+            e.printStackTrace();
+        }
 
         //call custom Matpower function "dcopf"
-        double[][]results = eng.feval("dcopf", mpc);
+        double[][]results = new double[0][];
+        try {
+            results = eng.feval("dcopf", mpc);
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
 
         return results;
     }
@@ -98,8 +112,12 @@ public class ExtDcopfSim extends ExtSimulation implements ExtOpfSimulation {
         int index_uuid = 0;
         int index_bus = 2;
 
-        ArrayList<UUID> uuid_simona = csvreader(path, index_uuid);
-        ArrayList<String> bus_matpower = csvreader(path, index_bus);
+        // für die Typübergabe
+        String string = "string";
+        UUID uuid = UUID.randomUUID();
+
+        ArrayList<UUID> uuid_simona = csvreader(path, index_uuid, uuid);
+        ArrayList<String> bus_matpower = csvreader(path, index_bus, string);
 
         // remove first line, because this is the not a generator but the superior grid
         uuid_simona.remove(0);
@@ -128,15 +146,15 @@ public class ExtDcopfSim extends ExtSimulation implements ExtOpfSimulation {
         return power;
     }
 
-    public static ArrayList<String> csvreader(String path, int index, Type T){
+    public static <T> ArrayList<T> csvreader(String path, int index, T type){
 
         String line = "";
-        ArrayList<> output = new ArrayList<T>();
+        ArrayList<T> output = new ArrayList<T>();
 
         try {
             BufferedReader br = new BufferedReader(new FileReader(path));
             while((line = br.readLine()) != null) {
-                Type[] values = line.split(";");
+                T[] values = (T[]) line.split(";");
                 output.add(values[index]);
             }
         } catch (FileNotFoundException e) {
