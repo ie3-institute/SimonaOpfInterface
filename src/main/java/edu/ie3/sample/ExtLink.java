@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ExtLink implements ExtLinkInterface {
-  //private final ExternalSampleSim sampleSim = new ExternalSampleSim();
+  // private final ExternalSampleSim sampleSim = new ExternalSampleSim();
   private final ExtDcopfSim dcopfSim = new ExtDcopfSim();
 
   @Override
