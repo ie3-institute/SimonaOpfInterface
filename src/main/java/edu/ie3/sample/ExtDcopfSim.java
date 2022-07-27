@@ -21,6 +21,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
+
 import org.slf4j.LoggerFactory;
 import tech.units.indriya.quantity.Quantities;
 
@@ -31,7 +33,7 @@ public class ExtDcopfSim extends ExtSimulation implements ExtOpfSimulation {
   private ExtOpfData opfData;
 
   private HashMap<Integer, UUID> generatorsMp2Simona;
-  private String path = "input/samples/vn_simona/fullGrid/fixed_feed_in_input.csv";
+  private String path = "input/samples/dcopf/1-LV-semiurb4-2-no_sw/fixed_feed_in_input.csv";
   private String gridname = "semiurb4.mat";
 
   @Override
@@ -114,12 +116,8 @@ public class ExtDcopfSim extends ExtSimulation implements ExtOpfSimulation {
     int index_uuid = 0;
     int index_bus = 2;
 
-    // für die Typübergabe
-    String string = "string";
-    UUID uuid = UUID.randomUUID();
-
-    ArrayList<UUID> uuid_simona = csvreader(path, index_uuid, uuid);
-    ArrayList<String> bus_matpower = csvreader(path, index_bus, string);
+    List<UUID> uuid_simona = csvreader(path, index_uuid).stream().map(UUID::fromString).collect(Collectors.toList());
+    List<String> bus_matpower = csvreader(path, index_bus);
 
     // remove first line, because this is the not a generator but the superior grid
     uuid_simona.remove(0);
@@ -149,17 +147,18 @@ public class ExtDcopfSim extends ExtSimulation implements ExtOpfSimulation {
     return power;
   }
 
-  public static <T> ArrayList<T> csvreader(String path, int index, T type) {
+  public static ArrayList<String> csvreader(String path, int index) {
 
     String line = "";
-    ArrayList<T> output = new ArrayList<T>();
+    ArrayList<String> output = new ArrayList<String>();
 
     try {
       BufferedReader br = new BufferedReader(new FileReader(path));
       while ((line = br.readLine()) != null) {
-        T[] values = (T[]) line.split(";");
+        String[] values = line.split(";");
         output.add(values[index]);
       }
+      output.remove(0);
     } catch (FileNotFoundException e) {
       e.printStackTrace();
     } catch (IOException e) {
