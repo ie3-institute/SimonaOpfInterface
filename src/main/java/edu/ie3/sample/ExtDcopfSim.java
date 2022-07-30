@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 import tech.units.indriya.quantity.Quantities;
 
 public class ExtDcopfSim extends ExtSimulation implements ExtOpfSimulation {
-  private final Logger log = (Logger) LoggerFactory.getLogger("ExternalSampleSim");
+  private final Logger log = (Logger) LoggerFactory.getLogger("ExtDcopfSim");
 
   private static MatlabEngine eng;
   private ExtOpfData opfData;
@@ -65,6 +65,7 @@ public class ExtDcopfSim extends ExtSimulation implements ExtOpfSimulation {
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
+    log.info("Raw Data received from Matpower");
 
     // transform Double into Comparable Quantity PValue
     ArrayList<PValue> activePower = new ArrayList<PValue>();
@@ -74,22 +75,29 @@ public class ExtDcopfSim extends ExtSimulation implements ExtOpfSimulation {
 
     // Map setpoints to generators' UUID
     HashMap<Integer, UUID> generatorsMp2Simona = this.generatorsMp2Simona;
-    HashMap<UUID, PValue> setpoints = new HashMap<UUID, PValue>();
+    HashMap<UUID, PValue> setpoints = new HashMap<>();
+
 
     for (int i = 0; i < activePower.size(); i++) {
-      setpoints.put(generatorsMp2Simona.get(i), activePower.get(i));
+      setpoints.put(generatorsMp2Simona.get(i+1), activePower.get(i));
     }
 
     SetpointsMessage setpointsMessage = new SetpointsMessage(setpoints);
 
-    log.debug("Sending active power setpoints to SIMONA: {}", setpoints);
+    log.info("Sending active power setpoints to SIMONA: {}", setpoints);
     opfData.sendSetpoints(setpointsMessage);
 
     // return triggers for next activity
     ArrayList<Long> newTicks = new ArrayList<>();
-    newTicks.add(tick + 900);
-    log.info("Sending next ticks to SIMONA: {}", newTicks);
-    return newTicks;
+    if(tick==0){
+      newTicks.add(tick + 900);
+      log.info("Sending next ticks to SIMONA: {}", newTicks);
+      return newTicks;
+    }
+    else{
+      log.info("no further ticks sent to SIMONA");
+      return Collections.emptyList();
+    }
   }
 
   public double[][] callMatpower(String mpc) throws InterruptedException {
@@ -119,10 +127,6 @@ public class ExtDcopfSim extends ExtSimulation implements ExtOpfSimulation {
     List<UUID> uuid_simona = csvreader(path, index_uuid).stream().map(UUID::fromString).collect(Collectors.toList());
     List<String> bus_matpower = csvreader(path, index_bus);
 
-    // remove first line, because this is the not a generator but the superior grid
-    uuid_simona.remove(0);
-    bus_matpower.remove(0);
-
     // remove irrelevant information from bus_matpower and convert into integer ArrayList
     ArrayList<Integer> bus_mp = new ArrayList<Integer>();
 
@@ -138,12 +142,13 @@ public class ExtDcopfSim extends ExtSimulation implements ExtOpfSimulation {
     for (int i = 0; i < bus_mp.size(); i++) {
       mp2simona.put(bus_mp.get(i), uuid_simona.get(i));
     }
+    log.info("UUID to Bus Map: {}", mp2simona);
 
     return mp2simona;
   }
 
   public PValue toPValue(Double setpoint) {
-    PValue power = new PValue(Quantities.getQuantity(setpoint, PowerSystemUnits.KILOWATT));
+    PValue power = new PValue(Quantities.getQuantity(setpoint, PowerSystemUnits.MEGAWATT));
     return power;
   }
 
