@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
-
 import org.slf4j.LoggerFactory;
 import tech.units.indriya.quantity.Quantities;
 
@@ -77,9 +76,8 @@ public class ExtDcopfSim extends ExtSimulation implements ExtOpfSimulation {
     HashMap<Integer, UUID> generatorsMp2Simona = this.generatorsMp2Simona;
     HashMap<UUID, PValue> setpoints = new HashMap<>();
 
-
     for (int i = 0; i < activePower.size(); i++) {
-      setpoints.put(generatorsMp2Simona.get(i+1), activePower.get(i));
+      setpoints.put(generatorsMp2Simona.get(i + 1), activePower.get(i));
     }
 
     SetpointsMessage setpointsMessage = new SetpointsMessage(setpoints);
@@ -88,13 +86,13 @@ public class ExtDcopfSim extends ExtSimulation implements ExtOpfSimulation {
     opfData.sendSetpoints(setpointsMessage);
 
     // return triggers for next activity
+    // Long lastTickInSimulation = simulationEndDate.toTick(simulationStartDate)
     ArrayList<Long> newTicks = new ArrayList<>();
-    if(tick==0){
+    if (tick == 0) {
       newTicks.add(tick + 900);
       log.info("Sending next ticks to SIMONA: {}", newTicks);
       return newTicks;
-    }
-    else{
+    } else {
       log.info("no further ticks sent to SIMONA");
       return Collections.emptyList();
     }
@@ -124,7 +122,8 @@ public class ExtDcopfSim extends ExtSimulation implements ExtOpfSimulation {
     int index_uuid = 0;
     int index_bus = 2;
 
-    List<UUID> uuid_simona = csvreader(path, index_uuid).stream().map(UUID::fromString).collect(Collectors.toList());
+    List<UUID> uuid_simona =
+        csvreader(path, index_uuid).stream().map(UUID::fromString).collect(Collectors.toList());
     List<String> bus_matpower = csvreader(path, index_bus);
 
     // remove irrelevant information from bus_matpower and convert into integer ArrayList
