@@ -88,7 +88,7 @@ public class ExtDcopfSim extends ExtSimulation implements ExtOpfSimulation {
     // return triggers for next activity
     // Long lastTickInSimulation = simulationEndDate.toTick(simulationStartDate)
     ArrayList<Long> newTicks = new ArrayList<>();
-    if (tick <= 900) {
+    if (tick < 900) {
       newTicks.add(tick + 900);
       log.info("Sending next ticks to SIMONA: {}", newTicks);
       return newTicks;
@@ -147,7 +147,7 @@ public class ExtDcopfSim extends ExtSimulation implements ExtOpfSimulation {
   }
 
   public PValue toPValue(Double setpoint) {
-    PValue power = new PValue(Quantities.getQuantity(setpoint, PowerSystemUnits.MEGAWATT));
+    PValue power = new PValue(Quantities.getQuantity(-setpoint, PowerSystemUnits.MEGAWATT));
     return power;
   }
 
