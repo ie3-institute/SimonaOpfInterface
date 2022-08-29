@@ -22,7 +22,7 @@ dependencies{
 	implementation 'com.github.ie3-institute:simonaAPI:0.1-SNAPSHOT'
 
 	/* logging */
-	implementation 'ch.qos.logback:logback-classic:1.2.11'
+	implementation 'ch.qos.logback:logback-classic:1.4.0'
 
 	implementation files('lib/engine.jar')
 
