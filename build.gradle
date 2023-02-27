@@ -2,7 +2,7 @@ plugins {
 	id 'groovy' // groovy support
 	id 'java' // java support
 	id 'com.diffplug.spotless' version '6.6.1' //code format
-	id "com.github.johnrengelman.shadow" version "7.1.2" // fat jar
+	id "com.github.johnrengelman.shadow" version "8.0.0" // fat jar
 }
 
 ext {
